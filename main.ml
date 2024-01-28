@@ -1,6 +1,7 @@
 open State
 open Random_variant
 open Adversary_variant
+open Bot
   
 let read_words_from_file filename =
   try
@@ -32,10 +33,13 @@ let () =
     right_words = words;
     wrong_words = words;
   } in
-  
-  print_string "Welcome to Wordle game!\nType 'r' to get a list of words left,\n or  'n' for a word that consists only of unknown letters.\n";
-  Printf.printf "A random word: %s\n" random_word;
-  (*adversary_game_loop initial_state words;*)
-  random_game_loop random_word initial_state words;
 
+  print_string "Welcome to Wordle game!\nType 'r' to get a list of words left,\n     'n' for a word that consists only of unknown letters\n  or 'b' for a word with the most common letters\n";
+  Printf.printf "A random word: %s\n" random_word;
+  (*adversary_game_loop initial_state words;
+  random_game_loop random_word initial_state words;*)
+  bot_game_loop random_word initial_state words 1;
+
+
+  (* git add -- * ':!*.cmi' ':!*.cmo' ':!*.out' *)
 

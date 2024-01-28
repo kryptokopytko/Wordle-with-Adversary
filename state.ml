@@ -116,3 +116,18 @@ let erase_character (c : char) : unit state_monad =
         then current_state.grey_chars
         else c :: current_state.grey_chars
     })
+
+
+let check_letter guess word idx =
+    if guess.[idx] = word.[idx] 
+      then new_character true guess.[idx] idx
+      else if contains_char word guess.[idx]
+        then new_character false guess.[idx] idx
+        else erase_character guess.[idx]
+        
+let rec check_letters guess word idx : unit state_monad =
+  if String.length word = idx + 1 then
+    check_letter guess word idx
+  else
+    bind (check_letter guess word idx)
+         (fun () -> check_letters guess word (idx + 1))
