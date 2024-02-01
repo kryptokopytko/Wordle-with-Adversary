@@ -20,6 +20,8 @@ let read_words_from_file filename =
     Printf.printf "Error: %s\n" msg;
     []
 
+let print_rainbow_string str idx =
+  Printf.printf "\027[38;5;%dm%s\027[0m" (idx * 36 + 21) str
 
 let () =
   let _ = Random.init (int_of_float (Unix.time ())) in 
@@ -32,32 +34,30 @@ let () =
     grey_chars = [];
     right_words = words;
     wrong_words = words;
-  } in (*
-  let easy_state : state = {
-    green_chars = [None; None; None];
-    yellow_chars = [[]; []; []];
-    grey_chars = [];
-    right_words = ["abc"; "bac"; "cab"; "cba"; "bca"; "acb"];
-    wrong_words = ["abc"; "bac"; "cab"; "cba"; "bca"; "acb"];
-  } in *)
+  } in
+  print_rainbow_string "Welcome to Wordle game!\n" 0;
+  print_rainbow_string "Type 'r' to play normally,\n" 1;
+  print_rainbow_string "     'a' to play with adversary,\n" 2;
+  print_rainbow_string "     'b' to see how bot suffers\n" 3;
+  print_rainbow_string "     's' to see statistics for different bot strategies\n" 4;
+  flush stdout;
 
-  print_string "Welcome to Wordle game!\nType 'r' to get a list of words left,\n     'n' for a word that consists only of unknown letters\n  or 'b' for a word with the most common letters\n";
-  Printf.printf "A random word: %s\n" random_word;
-  (*adversary_game_loop initial_state words;
-  random_game_loop random_word initial_state words;*)
-  (*bot_game_loop random_word initial_state words 1*)
-  adversary_game_loop initial_state words
-  (*
-  let update_state_monad =
-    bind (new_yellow_character 'i' 1) (fun () ->
-      bind (new_green_character 'e' 4) (fun () ->
-        bind (new_green_character 'a' 0) (fun () ->
-        erase_character 'p'
-      ))
-    )
-  in
-  let (_, final_state) = update_state_monad  initial_state in
-  *)
+  match read_line () with
+  | choice when choice = "r" ->
+    print_rainbow_string "\nType 'r' to get a list of words left,\n" 0;
+    print_rainbow_string "     'n' for a word that consists only of unknown letters\n" 2;
+    print_rainbow_string "     'b' for a word with the most common letters\n" 4;
+    random_game_loop random_word initial_state words
+  | choice when choice = "a" ->
+    print_rainbow_string "\nType 'r' to get a list of words left,\n" 0;
+    print_rainbow_string "     'n' for a word that consists only of unknown letters\n" 2 ;
+    print_rainbow_string "     'b' for a word with the most common letters\n" 4;
+    adversary_game_loop initial_state words
+  | choice when choice = "b" ->
+    bot_game_loop random_word initial_state words 1
+  | choice when choice = "s" ->
+    print_rainbow_string "meh\n" 1
+  | _ -> failwith "Something went wrong with input\n" 
 
 
 (* git add -- * ':!*.cmi' ':!*.cmo' ':!*.out' *)

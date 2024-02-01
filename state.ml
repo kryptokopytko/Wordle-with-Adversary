@@ -155,3 +155,6 @@ let rec check_letters guess word idx : unit state_monad =
   else
     bind (check_letter guess word idx)
          (fun () -> check_letters guess word (idx + 1))
+
+let option_list_to_list option_list =
+  List.filter_map (fun x -> x) option_list

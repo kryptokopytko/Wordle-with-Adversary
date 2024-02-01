@@ -137,7 +137,7 @@ let rec adversary_game_loop state words =
   | Some guess when guess = "r" -> print_right_words state; adversary_game_loop state words
   | Some guess when guess = "n" -> print_wrong_words state; adversary_game_loop state words
   | Some guess when guess = "b"-> 
-    Printf.printf "Recommended word: %s\n" (best_word state.right_words);
+    Printf.printf "Recommended word: %s\n" (best_word state.right_words (option_list_to_list state.green_chars));
     adversary_game_loop state words
  
   | Some guess when List.mem guess words ->
