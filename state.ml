@@ -1,6 +1,6 @@
 type state = {
   green_chars: char option list;  (* List of characters in the right place *)
-  yellow_chars: char option list; (* List of characters in the wrong place, but contained by the word*)
+  yellow_chars: char list list; (* List of characters in the wrong place, but contained by the word*)
   grey_chars: char list;          (* List of characters absent in the word *)
   right_words: string list;       (* List of words fitting given criteria *)
   wrong_words: string list;       (* List of words with only unknown letters *)
@@ -29,14 +29,26 @@ let print_state state =
     | None -> Printf.printf "_ ") state.green_chars;
   
   Printf.printf "\n";
-  List.iter (function
-    | Some c -> Printf.printf "\027[33m%c\027[0m " c (* żółty tekst *)
-    | None -> Printf.printf "_ ") state.yellow_chars;
   
+  List.iter (fun chars ->
+    match List.length chars with
+    | 0 ->
+      Printf.printf "_ "
+    | 1 -> 
+      Printf.printf "\027[33m%c \027[0m" (List.hd chars)
+    | _ ->
+      List.iter (fun c -> Printf.printf "\027[33m%c\027[0m" c) chars;
+      Printf.printf " "
+
+  ) state.yellow_chars;
+
   Printf.printf "\n";
+  
   List.iter (function c ->  Printf.printf "\027[90m%c\027[0m " c (* szary tekst *)
   ) state.grey_chars;
+  
   Printf.printf "\n"
+
 
 
 let print_right_words state =
@@ -51,9 +63,17 @@ let print_wrong_words state =
   else 
     Printf.printf "There are no such words\n"
 
-let rec insert c i list =
+let rec insert_to_option_list c i list =
   if i = 0 then Some c :: List.tl list
-  else List.hd list :: insert c (i - 1) (List.tl list)
+  else List.hd list :: insert_to_option_list c (i - 1) (List.tl list)
+
+let rec insert_to_list_list c i list =
+  if i = 0 then 
+    if List.mem c (List.hd list) then 
+      list
+    else (c :: (List.hd list)) :: (List.tl list)
+  else List.hd list :: insert_to_list_list c (i - 1) (List.tl list)
+
 
 let rec contains_char str ch =
   match str with
@@ -86,17 +106,21 @@ let update_wrong_words c current_state : state =
   in
   { current_state with wrong_words = updated_wrong_words }
 
-let new_character is_place_right c i : unit state_monad =
+let new_green_character c i : unit state_monad =
   bind get_state (fun current_state ->
-    let chars = if is_place_right then current_state.green_chars else current_state.yellow_chars in
-    let new_chars = insert c i chars in
     let updated_chars =
-      if is_place_right then
-        { current_state with green_chars = new_chars }
-      else
-        { current_state with yellow_chars = new_chars }
+        { current_state with green_chars = insert_to_option_list c i current_state.green_chars }
     in
-    let updated_right_words = update_right_words is_place_right c i updated_chars in
+    let updated_right_words = update_right_words true c i updated_chars in
+    let updated_words = update_wrong_words c updated_right_words in
+    set_state updated_words)
+
+let new_yellow_character c i : unit state_monad =
+  bind get_state (fun current_state ->
+    let updated_chars =
+        { current_state with yellow_chars = insert_to_list_list c i current_state.yellow_chars }
+    in
+    let updated_right_words = update_right_words false c i updated_chars in
     let updated_words = update_wrong_words c updated_right_words in
     set_state updated_words)
 
@@ -120,9 +144,9 @@ let erase_character (c : char) : unit state_monad =
 
 let check_letter guess word idx =
     if guess.[idx] = word.[idx] 
-      then new_character true guess.[idx] idx
+      then new_green_character guess.[idx] idx
       else if contains_char word guess.[idx]
-        then new_character false guess.[idx] idx
+        then new_yellow_character guess.[idx] idx
         else erase_character guess.[idx]
         
 let rec check_letters guess word idx : unit state_monad =

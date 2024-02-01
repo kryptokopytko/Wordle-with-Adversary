@@ -28,18 +28,37 @@ let () =
 
   let initial_state : state = {
     green_chars = [None; None; None; None; None];
-    yellow_chars = [None; None; None; None; None];
+    yellow_chars = [[]; []; []; []; []];
     grey_chars = [];
     right_words = words;
     wrong_words = words;
-  } in
+  } in (*
+  let easy_state : state = {
+    green_chars = [None; None; None];
+    yellow_chars = [[]; []; []];
+    grey_chars = [];
+    right_words = ["abc"; "bac"; "cab"; "cba"; "bca"; "acb"];
+    wrong_words = ["abc"; "bac"; "cab"; "cba"; "bca"; "acb"];
+  } in *)
 
   print_string "Welcome to Wordle game!\nType 'r' to get a list of words left,\n     'n' for a word that consists only of unknown letters\n  or 'b' for a word with the most common letters\n";
   Printf.printf "A random word: %s\n" random_word;
   (*adversary_game_loop initial_state words;
   random_game_loop random_word initial_state words;*)
-  bot_game_loop random_word initial_state words 1;
+  (*bot_game_loop random_word initial_state words 1*)
+  adversary_game_loop initial_state words
+  (*
+  let update_state_monad =
+    bind (new_yellow_character 'i' 1) (fun () ->
+      bind (new_green_character 'e' 4) (fun () ->
+        bind (new_green_character 'a' 0) (fun () ->
+        erase_character 'p'
+      ))
+    )
+  in
+  let (_, final_state) = update_state_monad  initial_state in
+  *)
 
 
-  (* git add -- * ':!*.cmi' ':!*.cmo' ':!*.out' *)
+(* git add -- * ':!*.cmi' ':!*.cmo' ':!*.out' *)
 

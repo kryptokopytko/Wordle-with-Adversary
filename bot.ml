@@ -93,4 +93,3 @@ let rec bot_game_loop word state words i =
     let (_, new_state) = (check_letters guess word 0) state in
       print_state new_state;
       bot_game_loop word new_state words (i + 1)
-  
