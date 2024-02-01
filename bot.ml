@@ -7,6 +7,7 @@ let rec string_to_list s idx =
     []
   else
     s.[idx] :: string_to_list s (idx + 1)
+
 let count_letters words green_letters =
   let letters_count_map =
     List.fold_left
@@ -32,12 +33,6 @@ let count_letters words green_letters =
   match letters_count_map with
   | Some count_map -> count_map
   | None -> CharMap.empty
-
-let rec string_to_list s idx = 
-  if idx = String.length s then
-    []
-  else
-    s.[idx] :: string_to_list s (idx + 1)
 
 let sum_of_letter_values word letter_values =
   let letter_to_value c =
@@ -69,22 +64,12 @@ let best_word words green_letters =
   let letter_counts = count_letters words green_letters in
   let word_sums = List.map (fun word -> (word, sum_of_letter_values word letter_counts)) words in
   let sorted_word_sums = List.sort (fun (_, sum1) (_, sum2) -> compare sum2 sum1) word_sums in
-  let filtered_words = filter_out_repeating_letters  sorted_word_sums in
-    if List.length filtered_words = 0 
-      then fst (List.hd sorted_word_sums)
-      else fst (List.hd filtered_words)
+  let filtered_words = filter_out_repeating_letters sorted_word_sums in
+  match filtered_words with
+  | [] -> fst (List.hd sorted_word_sums)
+  | hd :: _ -> fst hd
 
-let best_word_narrow_letters state = 
-  if List.length state.wrong_words = 0 
+let best_word_narrow_letters state strategy = 
+  if List.length state.wrong_words = 0 || (not strategy)
     then best_word state.right_words (option_list_to_list state.green_chars)
-    else List.hd state.wrong_words
-
-let rec bot_game_loop word state words i = 
-  let guess = (best_word state.right_words (option_list_to_list state.green_chars)) in
-  Printf.printf "Guess: %s\n" guess;
-  if word = guess then 
-    Printf.printf "Success! Number of guesses: %d\n" i
-  else
-    let (_, new_state) = (check_letters guess word 0) state in
-      print_state new_state;
-      bot_game_loop word new_state words (i + 1)
+    else best_word state.wrong_words (option_list_to_list state.green_chars)

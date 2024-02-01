@@ -139,7 +139,6 @@ let rec adversary_game_loop state words =
   | Some guess when guess = "b"-> 
     Printf.printf "Recommended word: %s\n" (best_word state.right_words (option_list_to_list state.green_chars));
     adversary_game_loop state words
- 
   | Some guess when List.mem guess words ->
     let (best_answer, is_success) = adversary_answer guess state in
     let (_, new_state) = update_state best_answer state in
@@ -147,3 +146,24 @@ let rec adversary_game_loop state words =
     if is_success then print_string "Success!\n" else adversary_game_loop new_state words
   | Some _ -> print_string "It's not an allowed word\n"; adversary_game_loop state words
   | None -> print_string "Error while reading input\n"; adversary_game_loop state words
+
+
+let rec bot_adv_silent_loop state strategy iteration = 
+  let guess = 
+    if iteration = 0 
+      then List.nth state.right_words (Random.int (List.length state.right_words))
+      else best_word_narrow_letters state strategy in
+  let (best_answer, is_success) = adversary_answer guess state in
+  let (_, new_state) = update_state best_answer state in
+  if is_success then 1 else (bot_adv_silent_loop new_state strategy (iteration + 1)) + 1
+      
+let stats_adv is_std_strategy state n =
+  let rec loop acc remaining =
+    if remaining = 0 then
+      acc
+    else
+      let result = bot_adv_silent_loop state is_std_strategy 0 in
+      loop (acc + result) (remaining - 1)
+  in
+  let average = loop 0 n in
+  float_of_int average /. float_of_int n

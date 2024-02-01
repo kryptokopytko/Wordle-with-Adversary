@@ -54,9 +54,19 @@ let () =
     print_rainbow_string "     'b' for a word with the most common letters\n" 4;
     adversary_game_loop initial_state words
   | choice when choice = "b" ->
-    bot_game_loop random_word initial_state words 1
+    bot_game_loop random_word initial_state 1
   | choice when choice = "s" ->
-    print_rainbow_string "meh\n" 1
+    let number_of_tests = 20 in
+    Printf.printf "Calculating...\n";
+    flush stdout;
+    Printf.printf "Average score for random variant and standard strategy: %f\n" (stats_rand true initial_state number_of_tests);
+    flush stdout;
+    Printf.printf "                                 and eliminating letters strategy: %f\n" (stats_rand false initial_state number_of_tests);
+    flush stdout;
+    Printf.printf "Average score for adversary variant and standard strategy: %f\n" (stats_adv true initial_state number_of_tests);
+    flush stdout;
+    Printf.printf "                                    and eliminating letters strategy: %f\n" (stats_adv false initial_state number_of_tests)
+
   | _ -> failwith "Something went wrong with input\n" 
 
 
