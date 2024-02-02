@@ -12,9 +12,11 @@ let rec random_game_loop word words : int state_monad =
     | guess when guess = "n" ->
       print_wrong_words state;
       random_game_loop word words
-    | guess when guess = "b" ->
-      Printf.printf "Recommended word: %s\n" (best_word state.right_words (option_list_to_list state.green_chars));
-      random_game_loop word words
+     | guess when guess = "b" ->
+      bind (best_word_narrow_letters false) (fun recommended ->
+        Printf.printf "Recommended word: %s\n" recommended;
+        random_game_loop word words
+      )
     | guess when not (List.exists ((=) guess) words) ->
       print_string "It's not an allowed word\n";
       random_game_loop word words
@@ -31,36 +33,39 @@ let rec random_game_loop word words : int state_monad =
       )
     | _ -> failwith "Something went wrong with input\n"
   )
+
 let rec bot_game_loop word : int state_monad =
-  bind get_state (fun current_state ->
-    let guess = best_word current_state.right_words (option_list_to_list current_state.green_chars) in
-    Printf.printf "Guess: %s\n" guess;
-    if word = guess then
-      return 1
-    else
-      bind (check_letters guess word 0) (fun () ->
+  bind get_state (fun state ->
+    bind (best_word_narrow_letters false) (fun guess ->
+      Printf.printf "Guess: %s\n" guess;
+      if word = guess then
+        return 1
+      else
+        bind (check_letters guess word 0) (fun () ->
           bind print_state_monad (fun () ->
-              bind (bot_game_loop word) (fun result ->
-                  return (result + 1)
-              )
+            bind (bot_game_loop word) (fun result ->
+              return (result + 1)
+            )
           )
-      )
+        )
+    )
   )
+
 
 let rec bot_silent_loop word strategy : int state_monad =
   bind get_state (fun state ->
-    let guess = best_word_narrow_letters state strategy in
+    bind (best_word_narrow_letters strategy) (fun guess ->
     if word = guess then
       return 1
     else
       bind (check_letters guess word 0) (fun () ->
           bind (bot_silent_loop word strategy) (fun result ->
               return (result + 1)
-          )
+          ))
         )
   )
 
-let stats_rand is_std_strategy state n =
+let stats_rand is_std_strategy n state =
   let rec loop acc remaining =
     if remaining = 0 then
       acc

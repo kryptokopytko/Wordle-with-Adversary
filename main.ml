@@ -60,14 +60,14 @@ let () =
     let result, final_state = run_state (bot_game_loop random_word) initial_state in
     Printf.printf "Success! Number of guesses: %d\n" result
   | choice when choice = "s" ->
-    let number_of_tests = 20 in
+    let number_of_tests = 50 in
     Printf.printf "Calculating...\n";
     flush stdout;
-    Printf.printf "Average score for random variant and standard strategy: %f\n" (stats_rand true initial_state number_of_tests);
+    Printf.printf "Average score for random variant and standard strategy: %f\n" (stats_rand false number_of_tests initial_state);
     flush stdout;
-    Printf.printf "                                 and eliminating letters strategy: %f\n" (stats_rand false initial_state number_of_tests);
+    Printf.printf "                                 and eliminating letters strategy: %f\n" (stats_rand true number_of_tests initial_state);
     flush stdout;
-    Printf.printf "Average score for adversary variant and standard strategy: %f\n" (stats_adv true initial_state number_of_tests);
+    Printf.printf "Average score for adversary variant and standard strategy: %f\n" (stats_adv false 1 initial_state);
     flush stdout;
-    Printf.printf "                                    and eliminating letters strategy: %f\n" (stats_adv false initial_state number_of_tests)
+    Printf.printf "                                    and eliminating letters strategy: %f\n" (stats_adv true 1 initial_state)
   | _ -> failwith "Something went wrong with input\n"

@@ -69,7 +69,12 @@ let best_word words green_letters =
   | [] -> fst (List.hd sorted_word_sums)
   | hd :: _ -> fst hd
 
-let best_word_narrow_letters state strategy = 
-  if List.length state.wrong_words = 0 || (not strategy)
-    then best_word state.right_words (option_list_to_list state.green_chars)
-    else best_word state.wrong_words (option_list_to_list state.green_chars)
+let best_word_narrow_letters strategy : string state_monad =
+  bind get_state (fun state ->
+    let words, green_letters =
+      if (List.length state.wrong_words = 0) || (not strategy) then
+        state.right_words, (option_list_to_list state.green_chars)
+      else
+        state.wrong_words, []
+    in
+    return (best_word words green_letters))

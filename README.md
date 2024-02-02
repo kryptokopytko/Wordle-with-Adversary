@@ -33,4 +33,5 @@ The Wordle with Adversary is a project that provides a platform for playing the 
 - Outsmart the adversary in the adversary gameplay mode.
 
 **Have fun playing Wordle with a twist and explore the various strategies employed by the implemented bots!**
+
 Compiling: ocamlc unix.cma state.ml bot.ml random_variant.ml adversary_variant.ml main.ml
