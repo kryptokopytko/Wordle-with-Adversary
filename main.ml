@@ -2,7 +2,7 @@ open State
 open Random_variant
 open Adversary_variant
 open Bot
-  
+
 let read_words_from_file filename =
   try
     let channel = open_in filename in
@@ -25,15 +25,16 @@ let print_rainbow_string str idx =
 
 let () =
   let _ = Random.init (int_of_float (Unix.time ())) in 
-  let words = read_words_from_file "words.txt" in
-  let random_word = List.nth words (Random.int (List.length words)) in 
+  let answer_words = read_words_from_file "words.txt" in
+  let guess_words = read_words_from_file "guesses.txt" in
+  let random_word = List.nth answer_words (Random.int (List.length answer_words)) in 
 
   let initial_state : state = {
     green_chars = [None; None; None; None; None];
     yellow_chars = [[]; []; []; []; []];
     grey_chars = [];
-    right_words = words;
-    wrong_words = words;
+    right_words = answer_words;
+    wrong_words = guess_words;
   } in
   print_rainbow_string "Welcome to Wordle game!\n" 0;
   print_rainbow_string "Type 'r' to play normally,\n" 1;
@@ -47,14 +48,17 @@ let () =
     print_rainbow_string "\nType 'r' to get a list of words left,\n" 0;
     print_rainbow_string "     'n' for a word that consists only of unknown letters\n" 2;
     print_rainbow_string "     'b' for a word with the most common letters\n" 4;
-    random_game_loop random_word initial_state words
+    let result, final_state = run_state (random_game_loop random_word guess_words) initial_state in
+    Printf.printf "Success! Number of guesses: %d\n" result
   | choice when choice = "a" ->
     print_rainbow_string "\nType 'r' to get a list of words left,\n" 0;
     print_rainbow_string "     'n' for a word that consists only of unknown letters\n" 2 ;
     print_rainbow_string "     'b' for a word with the most common letters\n" 4;
-    adversary_game_loop initial_state words
+    let result, final_state = run_state (adversary_game_loop initial_state guess_words) initial_state in
+    Printf.printf "Success! Number of guesses: %d\n" result
   | choice when choice = "b" ->
-    bot_game_loop random_word initial_state 1
+    let result, final_state = run_state (bot_game_loop random_word) initial_state in
+    Printf.printf "Success! Number of guesses: %d\n" result
   | choice when choice = "s" ->
     let number_of_tests = 20 in
     Printf.printf "Calculating...\n";
@@ -66,9 +70,4 @@ let () =
     Printf.printf "Average score for adversary variant and standard strategy: %f\n" (stats_adv true initial_state number_of_tests);
     flush stdout;
     Printf.printf "                                    and eliminating letters strategy: %f\n" (stats_adv false initial_state number_of_tests)
-
-  | _ -> failwith "Something went wrong with input\n" 
-
-
-(* git add -- * ':!*.cmi' ':!*.cmo' ':!*.out' *)
-
+  | _ -> failwith "Something went wrong with input\n"

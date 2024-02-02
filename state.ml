@@ -5,6 +5,7 @@ type state = {
   right_words: string list;       (* List of words fitting given criteria *)
   wrong_words: string list;       (* List of words with only unknown letters *)
 }
+
 (* ---------- monad methods ------------*)
 type 'a state_monad = state -> 'a * state
 
@@ -17,6 +18,9 @@ let bind m f state =
 let get_state : state state_monad = fun state -> (state, state)
 
 let set_state new_state : unit state_monad = fun _ -> ((), new_state)
+
+let run_state (action : 'a state_monad) (initial_state : state) : 'a * state =
+  action initial_state
 
 (* ---------- simple helper functions ------------*)
 
@@ -153,6 +157,13 @@ let print_state state =
   
   Printf.printf "\n"
 
+let print_state_monad : unit state_monad =
+  bind get_state (fun state ->
+    print_state state;
+    return ()
+  )
+
+
 let print_right_words state =
   if (List.length state.right_words) > 1 then
     Printf.printf "There are %d words left: %s\n" (List.length state.right_words) (String.concat " " state.right_words)
@@ -165,3 +176,14 @@ let print_wrong_words state =
   else 
     Printf.printf "There are no such words\n"
 
+let print_right_words_monad : unit state_monad =
+  bind get_state (fun state ->
+   print_right_words state;
+   return ()
+  )
+
+let print_wrong_words_monad : unit state_monad =
+  bind get_state (fun state ->
+   print_wrong_words state;
+   return ()
+  )
